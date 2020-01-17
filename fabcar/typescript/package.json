@@ -18,8 +18,8 @@
     "author": "Hyperledger",
     "license": "Apache-2.0",
     "dependencies": {
-        "fabric-ca-client": "beta",
-        "fabric-network": "beta"
+        "fabric-ca-client": "~1.4.0",
+        "fabric-network": "~1.4.0"
     },
     "devDependencies": {
         "@types/chai": "^4.1.7",
@@ -29,7 +29,7 @@
         "@types/sinon-chai": "^3.2.1",
         "chai": "^4.2.0",
         "mocha": "^5.2.0",
-        "nyc": "^14.1.1",
+        "nyc": "^13.1.0",
         "sinon": "^7.1.1",
         "sinon-chai": "^3.3.0",
         "ts-node": "^7.0.1",

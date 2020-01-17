@@ -32,4 +32,7 @@ services:
         - ./../../../../../basic-network/crypto-config:/opt/gopath/src/github.com/hyperledger/fabric/peer/crypto/
     networks:
         - basic
-
+    #depends_on:
+    #  - orderer.example.com
+    #  - peer0.org1.example.com
+    #  - couchdb

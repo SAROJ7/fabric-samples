@@ -1,0 +1,18 @@
+
+
+version: '2.0'
+
+services:
+  ca.example.com:
+    image: hyperledger/fabric-ca
+    environment:
+      - FABRIC_CA_HOME=/etc/hyperledger/msp
+      - FABRIC_CA_SERVER_CA_NAME=ca.example.com
+      - FABRIC_CA_SERVER_CA_CERTFILE=/etc/hyperledger/msp/cacert.pem
+      - FABRIC_CA_SERVER_CA_KEYFILE=/etc/hyperledger/msp/892fc5aa9f624090d3f103005e313f5e0431b3c7f2f29d2c1e27d3e290e25203_sk
+    ports:
+      - "7066:7066"
+    command: sh -c 'fabric-ca-server start -b admin:adminpw'
+    volumes:
+      - ./msp:/etc/hyperledger/msp
+    container_name: ca.example.com

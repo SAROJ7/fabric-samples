@@ -96,8 +96,8 @@ import (
 	"fmt"
 	"strings"
 
-	"github.com/hyperledger/fabric-chaincode-go/shim"
-	pb "github.com/hyperledger/fabric-protos-go/peer"
+	"github.com/hyperledger/fabric/core/chaincode/shim"
+	pb "github.com/hyperledger/fabric/protos/peer"
 )
 
 // SimpleChaincode example simple Chaincode implementation
@@ -199,19 +199,18 @@ func (t *SimpleChaincode) initMarble(stub shim.ChaincodeStubInterface, args []st
 		return shim.Error("Error getting transient: " + err.Error())
 	}
 
-	marbleJsonBytes, ok := transMap["marble"]
-	if !ok {
+	if _, ok := transMap["marble"]; !ok {
 		return shim.Error("marble must be a key in the transient map")
 	}
 
-	if len(marbleJsonBytes) == 0 {
+	if len(transMap["marble"]) == 0 {
 		return shim.Error("marble value in the transient map must be a non-empty JSON string")
 	}
 
 	var marbleInput marbleTransientInput
-	err = json.Unmarshal(marbleJsonBytes, &marbleInput)
+	err = json.Unmarshal(transMap["marble"], &marbleInput)
 	if err != nil {
-		return shim.Error("Failed to decode JSON of: " + string(marbleJsonBytes))
+		return shim.Error("Failed to decode JSON of: " + string(transMap["marble"]))
 	}
 
 	if len(marbleInput.Name) == 0 {
@@ -276,8 +275,8 @@ func (t *SimpleChaincode) initMarble(stub shim.ChaincodeStubInterface, args []st
 	//  ==== Index the marble to enable color-based range queries, e.g. return all blue marbles ====
 	//  An 'index' is a normal key/value entry in state.
 	//  The key is a composite key, with the elements that you want to range query on listed first.
-	//  In our case, the composite key is based on indexName=color~name.
-	//  This will enable very efficient state range queries based on composite keys matching indexName=color~*
+	//  In our case, the composite key is based on indexName~color~name.
+	//  This will enable very efficient state range queries based on composite keys matching indexName~color~*
 	indexName := "color~name"
 	colorNameIndexKey, err := stub.CreateCompositeKey(indexName, []string{marble.Color, marble.Name})
 	if err != nil {
@@ -307,7 +306,7 @@ func (t *SimpleChaincode) readMarble(stub shim.ChaincodeStubInterface, args []st
 	name = args[0]
 	valAsbytes, err := stub.GetPrivateData("collectionMarbles", name) //get the marble from chaincode state
 	if err != nil {
-		jsonResp = "{\"Error\":\"Failed to get state for " + name + ": " + err.Error() + "\"}"
+		jsonResp = "{\"Error\":\"Failed to get state for " + name + "\"}"
 		return shim.Error(jsonResp)
 	} else if valAsbytes == nil {
 		jsonResp = "{\"Error\":\"Marble does not exist: " + name + "\"}"
@@ -360,19 +359,18 @@ func (t *SimpleChaincode) delete(stub shim.ChaincodeStubInterface, args []string
 		return shim.Error("Error getting transient: " + err.Error())
 	}
 
-	marbleDeleteJsonBytes, ok := transMap["marble_delete"]
-	if !ok {
+	if _, ok := transMap["marble_delete"]; !ok {
 		return shim.Error("marble_delete must be a key in the transient map")
 	}
 
-	if len(marbleDeleteJsonBytes) == 0 {
+	if len(transMap["marble_delete"]) == 0 {
 		return shim.Error("marble_delete value in the transient map must be a non-empty JSON string")
 	}
 
 	var marbleDeleteInput marbleDeleteTransientInput
-	err = json.Unmarshal(marbleDeleteJsonBytes, &marbleDeleteInput)
+	err = json.Unmarshal(transMap["marble_delete"], &marbleDeleteInput)
 	if err != nil {
-		return shim.Error("Failed to decode JSON of: " + string(marbleDeleteJsonBytes))
+		return shim.Error("Failed to decode JSON of: " + string(transMap["marble_delete"]))
 	}
 
 	if len(marbleDeleteInput.Name) == 0 {
@@ -440,19 +438,18 @@ func (t *SimpleChaincode) transferMarble(stub shim.ChaincodeStubInterface, args 
 		return shim.Error("Error getting transient: " + err.Error())
 	}
 
-	marbleOwnerJsonBytes, ok := transMap["marble_owner"]
-	if !ok {
+	if _, ok := transMap["marble_owner"]; !ok {
 		return shim.Error("marble_owner must be a key in the transient map")
 	}
 
-	if len(marbleOwnerJsonBytes) == 0 {
+	if len(transMap["marble_owner"]) == 0 {
 		return shim.Error("marble_owner value in the transient map must be a non-empty JSON string")
 	}
 
 	var marbleTransferInput marbleTransferTransientInput
-	err = json.Unmarshal(marbleOwnerJsonBytes, &marbleTransferInput)
+	err = json.Unmarshal(transMap["marble_owner"], &marbleTransferInput)
 	if err != nil {
-		return shim.Error("Failed to decode JSON of: " + string(marbleOwnerJsonBytes))
+		return shim.Error("Failed to decode JSON of: " + string(transMap["marble_owner"]))
 	}
 
 	if len(marbleTransferInput.Name) == 0 {
@@ -523,16 +520,18 @@ func (t *SimpleChaincode) getMarblesByRange(stub shim.ChaincodeStubInterface, ar
 			return shim.Error(err.Error())
 		}
 		// Add a comma before array members, suppress it for the first array member
-		if bArrayMemberAlreadyWritten {
+		if bArrayMemberAlreadyWritten == true {
 			buffer.WriteString(",")
 		}
+		buffer.WriteString("{\"Key\":")
+		buffer.WriteString("\"")
+		buffer.WriteString(queryResponse.Key)
+		buffer.WriteString("\"")
 
-		buffer.WriteString(
-			fmt.Sprintf(
-				`{"Key":"%s", "Record":%s}`,
-				queryResponse.Key, queryResponse.Value,
-			),
-		)
+		buffer.WriteString(", \"Record\":")
+		// Record is a JSON object, so we write as-is
+		buffer.WriteString(string(queryResponse.Value))
+		buffer.WriteString("}")
 		bArrayMemberAlreadyWritten = true
 	}
 	buffer.WriteString("]")

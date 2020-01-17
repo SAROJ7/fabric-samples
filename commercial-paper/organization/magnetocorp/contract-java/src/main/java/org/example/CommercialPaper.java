@@ -1,7 +1,6 @@
 /*
- * SPDX-License-Identifier: Apache-2.0
+ *  SPDX-License-Identifier: Apache-2.0
  */
-
 package org.example;
 
 import static java.nio.charset.StandardCharsets.UTF_8;
@@ -21,7 +20,7 @@ public class CommercialPaper extends State {
     public final static String REDEEMED = "REDEEMED";
 
     @Property()
-    private String state="";
+    private String state ="";
 
     public String getState() {
         return state;
@@ -154,6 +153,7 @@ public class CommercialPaper extends State {
      * @param {Buffer} data to form back into the object
      */
     public static CommercialPaper deserialize(byte[] data) {
+        System.out.println("Byte data is "+ new String(data, UTF_8));
         JSONObject json = new JSONObject(new String(data, UTF_8));
 
         String issuer = json.getString("issuer");
@@ -162,7 +162,7 @@ public class CommercialPaper extends State {
         String maturityDateTime = json.getString("maturityDateTime");
         String owner = json.getString("owner");
         int faceValue = json.getInt("faceValue");
-        String state = json.getString("state");        
+        String state = json.getString("state");
         return createInstance(issuer, paperNumber, issueDateTime, maturityDateTime, faceValue,owner,state);
     }
 
@@ -178,6 +178,5 @@ public class CommercialPaper extends State {
         return new CommercialPaper().setIssuer(issuer).setPaperNumber(paperNumber).setMaturityDateTime(maturityDateTime)
                 .setFaceValue(faceValue).setKey().setIssueDateTime(issueDateTime).setOwner(owner).setState(state);
     }
-
 
 }

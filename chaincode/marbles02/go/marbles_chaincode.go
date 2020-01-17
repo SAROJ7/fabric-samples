@@ -87,8 +87,8 @@ import (
 	"strings"
 	"time"
 
-	"github.com/hyperledger/fabric-chaincode-go/shim"
-	pb "github.com/hyperledger/fabric-protos-go/peer"
+	"github.com/hyperledger/fabric/core/chaincode/shim"
+	pb "github.com/hyperledger/fabric/protos/peer"
 )
 
 // SimpleChaincode example simple Chaincode implementation
@@ -149,7 +149,6 @@ func (t *SimpleChaincode) Invoke(stub shim.ChaincodeStubInterface) pb.Response {
 	} else if function == "queryMarblesWithPagination" {
 		return t.queryMarblesWithPagination(stub, args)
 	}
-
 	fmt.Println("invoke did not find func: " + function) //error
 	return shim.Error("Received unknown function invocation")
 }

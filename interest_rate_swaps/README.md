@@ -110,11 +110,16 @@ and run a swap transaction flow from creation to settlement.
 ### Prerequisites
 
 The following prerequisites are needed to run this sample:
+* You need to run this sample from your GOPATH. If you have downloaded the
+  `fabric-samples` directory outside your GOPATH, then you need to copy or
+  move the interest rate sample into your GOPATH.
 * Fabric docker images. By default the `network/network.sh` script will look for
   fabric images with the `latest` tag, this can be adapted with the `-i` command
   line parameter of the script.
 * A local installation of `configtxgen` and `cryptogen` in the `PATH` environment,
   or included in `fabric-samples/bin` directory.
+* Vendoring the chaincode. In the `chaincode` directory, run `govendor init` and
+  `govendor add +external` to vendor the shim from your local copy of fabric.
 
 ### Bringing up the network
 
@@ -133,11 +138,10 @@ commands in the following section.
 
 ### Transactions
 
-The chaincode is initialized as follows:
+The chaincode is instantiated as follows:
 ```
-peer chaincode invoke -o irs-orderer:7050 --isInit -C irs --waitForEvent -n irscc --peerAddresses irs-rrprovider:7051 --peerAddresses irs-partya:7051 --peerAddresses irs-partyb:7051 --peerAddresses irs-partyc:7051 --peerAddresses irs-auditor:7051 -c '{"Args":["init","auditor","1000000","rrprovider","myrr"]}'
+peer chaincode instantiate -o irs-orderer:7050 -C irs -n irscc -l golang -v 0 -c '{"Args":["init","auditor","1000000","rrprovider","myrr"]}' -P "AND(OR('partya.peer','partyb.peer','partyc.peer'), 'auditor.peer')"
 ```
-
 This sets an auditing threshold of 1M, above which the `auditor` organization
 needs to be involved. It also specifies the `myrr` reference rate provided by
 the `rrprovider` organization.

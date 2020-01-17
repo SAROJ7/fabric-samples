@@ -11,3 +11,4 @@
 .project
 # omit Go vendor directories
 vendor/
+chaincode-docker-devmode/msp/msp/keystore
